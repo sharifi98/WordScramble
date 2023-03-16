@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var usedWords = [String]()
     @State private var rootWord = ""
     @State private var newWord = ""
+    @State private var score = 0
     
     @State private var errorTitle = ""
     @State private var errorMessage = ""
@@ -20,7 +21,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
-                Section {
+                Section(header: Text("Your score: \(score)")) {
                     TextField("Enter your word", text: $newWord)
                         .autocapitalization(.none)
                 }
@@ -42,14 +43,21 @@ struct ContentView: View {
             } message: {
                 Text(errorMessage)
             }
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Reset", action: resetGame)
+                }
+            }
         }
+        
         
     }
     
     func addNewWord() {
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
         guard answer.count > 0 else { return }
-       
+        
         guard isOriginal(word: answer) else {
             wordError(title: "Word is already used", message: "Be more original")
             return
@@ -72,7 +80,7 @@ struct ContentView: View {
         withAnimation {
             usedWords.insert(answer, at: 0)
         }
-        
+        score += 1
         newWord = ""
     }
     
@@ -94,6 +102,13 @@ struct ContentView: View {
         fatalError("Could not load start.txt from bundle.")
         
     }
+    
+    func resetGame() {
+        usedWords = [String]()
+        score = 0
+        startGame()
+    }
+    
     
     func isOriginal(word: String) -> Bool {
         !usedWords.contains(word) && !(word == rootWord)
